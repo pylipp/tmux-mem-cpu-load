@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Expansion of tmux-mem-cpu-load plugin (not functioning).
+"""Expansion of tmux-mem-cpu-load plugin.
 The idea is to parse sensor information and prepend it to the output of the
 original plugin.
 In my .tmux.conf I set:
@@ -9,6 +9,9 @@ set -g status-right '#($TMUX_PLUGIN_MANAGER_PATH/tmux-mem-cpu-load/tmux-mem-cpu-
 import re
 import subprocess
 import sys
+import os.path
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # shamelessly copied from bumblebee-status (module 'sensors')
 temperature_pattern = re.compile(r"^\s*temp1_input:\s*([\d.]+)$", re.MULTILINE)
@@ -21,7 +24,8 @@ if match:
     temperature = "{}°C ".format(int(float(match[0])))
 
 # get the original output and prepend the temperature info
-plugin_output = subprocess.check_output("./tmux-mem-cpu-load").decode("ascii")
+plugin_output = subprocess.check_output(
+    os.path.join(SCRIPT_DIR,"./tmux-mem-cpu-load")).decode("ascii")
 
 # neither of these gives any output in tmux status
 # print(temperature + plugin_output)
