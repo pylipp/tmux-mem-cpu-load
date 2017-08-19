@@ -13,15 +13,24 @@ import os.path
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# shamelessly copied from bumblebee-status (module 'sensors')
-temperature_pattern = re.compile(r"^\s*temp1_input:\s*([\d.]+)$", re.MULTILINE)
-
-temperature_info = subprocess.check_output(["sensors", "-u"]).decode("ascii")
-match = temperature_pattern.findall(temperature_info)
-
 temperature = ""
-if match:
-    temperature = "{}°C ".format(int(float(match[0])))
+
+try:
+    # for Raspberry Pi
+    with open("/sys/class/thermal/thermal_zone0/temp") as f:
+        temperature = "{}°C ".format(int(float(f.read()) * 0.001))
+except IOError:
+    try:
+        # shamelessly copied from bumblebee-status (module 'sensors')
+        temperature_pattern = re.compile(r"^\s*temp1_input:\s*([\d.]+)$", re.MULTILINE)
+
+        temperature_info = subprocess.check_output(["sensors", "-u"]).decode("ascii")
+        match = temperature_pattern.findall(temperature_info)
+
+        if match:
+            temperature = "{}°C ".format(int(float(match[0])))
+    except subprocess.CalledProcessError:
+        pass
 
 # get the original output and prepend the temperature info
 plugin_output = subprocess.check_output(
