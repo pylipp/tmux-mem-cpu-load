@@ -34,7 +34,8 @@ except IOError:
 
 # get the original output and prepend the temperature info
 plugin_output = subprocess.check_output(
-    os.path.join(SCRIPT_DIR,"./tmux-mem-cpu-load")).decode("ascii")
+        [os.path.join(SCRIPT_DIR, "./tmux-mem-cpu-load")] + sys.argv[1:]
+        ).decode("ascii")
 
 # neither of these gives any output in tmux status
 # print(temperature + plugin_output)
