@@ -10,6 +10,7 @@ import re
 import subprocess
 import sys
 import os.path
+from datetime import datetime as dt
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -18,7 +19,7 @@ temperature = ""
 try:
     # for Raspberry Pi
     with open("/sys/class/thermal/thermal_zone0/temp") as f:
-        temperature = "{}°C ".format(int(float(f.read()) * 0.001))
+        temperature = "{}°C".format(int(float(f.read()) * 0.001))
 except IOError:
     try:
         # shamelessly copied from bumblebee-status (module 'sensors')
@@ -28,19 +29,17 @@ except IOError:
         match = temperature_pattern.findall(temperature_info)
 
         if match:
-            temperature = "{}°C ".format(int(float(match[0])))
+            temperature = "{}°C".format(int(float(match[0])))
     except subprocess.CalledProcessError:
         pass
 
 # get the original output and prepend the temperature info
 plugin_output = subprocess.check_output(
         [os.path.join(SCRIPT_DIR, "./tmux-mem-cpu-load")] + sys.argv[1:]
-        ).decode("ascii")
+        ).decode("utf-8")
 
-# neither of these gives any output in tmux status
-# print(temperature + plugin_output)
-sys.stdout.write(temperature + plugin_output)
-sys.stdout.flush()
+print(" ".join([
+    dt.now().strftime("%m-%d %H:%M:%S"), temperature, plugin_output]))
 
 # not required in python, script will return 0 (success) anyway
 # sys.exit(0)
